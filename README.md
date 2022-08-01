@@ -67,6 +67,55 @@ From there simply follow the instructions.
 
 Any previous setup made in your configuration.yaml will be taken over to the GUI and can be removed afterwards.
 
+#### entities customization
+
+You can override entities attribute:
+Each override consists of 2 parts: Filter for match entity, and modifications to apply.
+friendly_name is the display name of entity for HA, formatted from object_name.
+
+    Avaiable Filters:
+        - filter_object_name: filter on object_name attribute matching equals string. Other possible value is '*' for get all entities.
+        - filter_object_name_regex: Filter as previus, but with regex. For example: 'LUCE SALA|LUCE CAMERA|SENSORI.*'
+        - filter_friendly_name: filter on friendly_name attribute.
+        - filter_friendly_name_regex: Filter as previus, but with regex.
+        - filter_object_id: filter on object_id attribute (id of entity getted from vimar).
+        - filter_object_id_regex: Filter as previus, but with regex.
+        - filter_room_name: filter on room_name attribute matching equals string. For example: 'CUCINA'
+        - filter_room_name_regex: Filter as previus, but with regex. For example: 'CUCINA|BAGNO'
+
+    Avaiable Modifications:
+        - friendly_name_as_vimar: set friendly_name from original object_name, without using default formatter.
+        - friendly_name_room_name_at_begin: If the entity has the room_name attribute, it is placed at the beginning of friendly_name, and removed from the end if present. For example: 'Luce Cucina' -> 'Cucina Led'
+        - friendly_name_regexsub_pattern + friendly_name_regexsub_repl: Allow to replace a string in friendly_name attribute. 
+        - friendly_name: Attribute override with specified value.
+        - device_type: Attribute override with specified value.
+        - device_class: Attribute override with specified value.
+        - icon: Attribute override with specified value.
+
+Usage example:
+
+    vimar:
+      device_override:
+        # Use original name without custom formatter for all entities
+        - filter_object_name: '*'
+          friendly_name_as_vimar: true 
+        #remove multiple spaces at each entities
+        - filter_friendly_name: '*'
+          friendly_name_regexsub_pattern: '  '
+          friendly_name_regexsub_repl: ' '
+        #move room name at begin for each entities
+        - filter_friendly_name: '*'
+          friendly_name_room_name_at_begin: true
+        #override for all entities cancello, searched with regex. Set entities 'Cancello' as switches, default is readed as lights.
+        - filter_friendly_name_regex: '.*Cancello.*'
+          device_type: switches
+          #device_class: garage
+          #icon: ''
+          #icon:
+    	  # - mdi:toggle-switch
+    	  # - mdi:toggle-switch-off
+          icon: mdi:garage-open,mdi:garage
+          
 #### credentials
 
 `username` and `password` are those from the local vimar webserver reachable under `host`. `schema`, `port`, and `certificate` is optional - if left out, the integration will use https calls on port 443 to the given host. The `certificate` can be a writeable filename. If there is no file found, the integration will download the current CA certificate from the local vimar webserver and save it under that given file name for sub sequent calls. (e.g. `certificate: rootCA.VIMAR.crt`). `timeout` will allow to tweak the timeout for connection and transmition of data to the webserver (default 6 seconds). if only some platforms should be added to home-assistant you list them in the `ignore` area.
